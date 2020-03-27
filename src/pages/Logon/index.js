@@ -13,7 +13,7 @@ export default function Logon() {
     <div className="logon-container">
       <section className="form">
       <img src={ logoImg } alt="Be The Hero" srcset=""/>
-      <form action="post">
+      <form action="/profile" method="get">
         <h1>Faça seu logon</h1>
 
         <input placeholder="Sua ID" />
