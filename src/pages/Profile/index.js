@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useHistory } from "react-router-dom";
 import { FiPower, FiTrash2 } from "react-icons/fi";
+// import {  } from "react-icons/md";
+import { CircularProgress, LinearProgress } from "@material-ui/core";
 
 import api from '../../services/api';
 
@@ -13,6 +15,8 @@ export default function Profile() {
   const ongName = localStorage.getItem('ongName');
   const history = useHistory();
   const [ incidents, setIncidents ] = useState([]);
+  const [ listLoaded, setListLoaded ] = useState(false);
+  const [ loading, setloading ] = useState(false);
 
   const handleLogout = (event) => {
     localStorage.clear();
@@ -26,7 +30,13 @@ export default function Profile() {
       }
     }).then((res) => {
       setIncidents(res.data.page.content.reverse());
+      setloading(false);
+      setListLoaded(true);
       console.log(res.data.page.content);      
+    }).catch((err) => {
+      setloading(false);
+      setListLoaded(false);
+      alert('Houve um problema ao tentar listar os incidentes. Tente novamente mais tarde.');
     });
   }
 
@@ -51,7 +61,10 @@ export default function Profile() {
     // return Intl.NumberFormat('en', { style: 'currency', currency: 'USD'}).format(value);
   }
 
-  useEffect(handleListIncidents, [ongId]);
+  useEffect(() => {
+    setloading(true);
+    handleListIncidents();
+  }, [ongId]);
 
   return (
     <div className="profile-container">
@@ -68,34 +81,36 @@ export default function Profile() {
       </header>
 
       <h1>Casos cadastrados</h1>
-
       <ul>
-        {
-          (
-            incidents.length == 0 ? 
-              <li>
-                <p>Você ainda não possui casos cadastrados.</p>
-              </li>
-            : 
-              incidents.map(incident => (
-                <li key={ incident.id }>
-                <strong>CASO:</strong>
-                <p>{ incident.title }</p>
-      
-                <strong>DESCRIÇÃO:</strong>
-                <p>{ incident.description }</p>
-                
-                <strong>VALOR:</strong>
-                <p>{ formatValue(incident.value) }</p>
-      
-                <button type="button" onClick={ () => {
-                  handleDeleteIncident(incident.id) }
-                }>
-                  <FiTrash2 size={20} color="#a8a8b3" />
-                </button>
-              </li>
-            ))
-          )          
+        { loading && 
+          <li>
+            <p><CircularProgress size={20}/> Buscando os seus incidentes.</p>
+          </li> 
+        } 
+        { (listLoaded && !loading) && 
+          incidents.map(incident => (
+            <li key={ incident.id }>
+              <strong>CASO:</strong>
+              <p>{ incident.title }</p>
+    
+              <strong>DESCRIÇÃO:</strong>
+              <p>{ incident.description }</p>
+              
+              <strong>VALOR:</strong>
+              <p>{ formatValue(incident.value) }</p>
+    
+              <button type="button" onClick={ () => {
+                handleDeleteIncident(incident.id) }
+              }>
+                <FiTrash2 size={20} color="#a8a8b3" />
+              </button>
+            </li>
+          ))
+        }
+        { (!listLoaded && !loading) && 
+          <li>
+            <p>Você ainda não possui casos cadastrados.</p>
+          </li> 
         }
       </ul>
 
